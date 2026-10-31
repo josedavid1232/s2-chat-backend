@@ -1,15 +1,24 @@
 package com.example.s2chatbackend;
 
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.stereotype.Controller;
+import jakarta.persistence.*; // Asegúrate de usar jakarta si estás en Spring Boot 3+
 
-@Controller
-public class ChatController {
+@Entity
+@Table(name = "messages")
+public class ChatMessage {
 
-    @MessageMapping("/chat.sendMessage")
-    @SendTo("/topic/public")
-    public ChatMessage sendMessage(ChatMessage chatMessage) {
-        return chatMessage;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String sender;
+    private String content;
+    
+    @Enumerated(EnumType.STRING)
+    private MessageType type;
+
+    public enum MessageType {
+        CHAT, JOIN, LEAVE
     }
+
+    // Constructores, Getters y Setters...
 }
