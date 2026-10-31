@@ -1,19 +1,17 @@
-package com.example.s2chatbackend;
+package com.example.s2chatbackend.model;
 
-import jakarta.persistence.*;
-import lombok.Data;
-import java.time.LocalDateTime;
-
-@Entity
-@Table(name = "messages")
-@Data
 public class ChatMessage {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
     private String sender;
     private String content;
-    private LocalDateTime timestamp = LocalDateTime.now();
+    private String type;
+
+    // Getters y Setters
+    public String getSender() { return sender; }
+    public void setSender(String sender) { this.sender = sender; }
+    
+    public String getContent() { return content; }
+    public void setContent(String content) { this.content = content; }
+    
+    public String type() { return type; }
+    public void setType(String type) { this.type = type; }
 }
