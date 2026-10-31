@@ -1,4 +1,4 @@
-package com.example.s2chatbackend;
+package com.example.s2chatbackend.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
@@ -18,8 +18,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws-chat")
-                .setAllowedOriginPatterns("*")
+        // 🔓 Clave: Permitir la conexión desde tu frontend en Vercel y localhost
+        registry.addEndpoint("/ws")
+                .setAllowedOriginPatterns("https://s2-chat-frontend.vercel.app", "http://localhost:*")
                 .withSockJS();
     }
 }
