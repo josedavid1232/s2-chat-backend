@@ -35,6 +35,6 @@ public class ChatController {
     @GetMapping("/messages")
     @ResponseBody
     public List<ChatMessageEntity> getMessages() {
-        return chatRepository.findTop50ByOrderByIdAsc();
+        return chatRepository.findAllByOrderByIdAsc();
     }
 }
