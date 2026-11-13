@@ -14,7 +14,7 @@ public interface ChatRepository extends JpaRepository<ChatMessageEntity, Long> {
     // Nueva adición: Borrado progresivo de mensajes con más de 30 minutos
     @Modifying
     @Transactional
-    @Query(value = "DELETE FROM chat_message_entity WHERE timestamp < NOW() - INTERVAL 30 MINUTE", nativeQuery = true)
+    @Query(value = "DELETE FROM messages WHERE timestamp < NOW() - INTERVAL 30 MINUTE", nativeQuery = true)
     void deleteExpiredMessages();
 
 }
