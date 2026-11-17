@@ -62,10 +62,8 @@ public class ChatController {
     @MessageMapping("/chat.deleteMessage")
     public void deleteMessage(@Payload ChatMessage deletePayload) {
         if (deletePayload.getId() != null) {
-            // Borra permanentemente el mensaje de la base de datos MySQL
             chatRepository.deleteById(deletePayload.getId());
 
-            // Notifica a todos los clientes conectados por WebSocket que el mensaje fue eliminado
             deletePayload.setType("DELETE");
             messagingTemplate.convertAndSend("/topic/public", deletePayload);
         }
