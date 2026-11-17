@@ -1,4 +1,4 @@
-package com.example.s2chatbackend;
+ppackage com.example.s2chatbackend;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -66,6 +66,18 @@ public class ChatController {
                 // Retransmitir la actualización a todos los clientes conectados
                 messagingTemplate.convertAndSend("/topic/public", editPayload);
             }
+        }
+    }
+
+    @MessageMapping("/chat.deleteMessage")
+    public void deleteMessage(@Payload ChatMessage deletePayload) {
+        if (deletePayload.getId() != null) {
+            // Eliminar permanentemente de la base de datos MySQL por su ID
+            chatRepository.deleteById(deletePayload.getId());
+
+            // Retransmitir la señal de borrado a todos los clientes conectados por WebSocket
+            deletePayload.setType("DELETE");
+            messagingTemplate.convertAndSend("/topic/public", deletePayload);
         }
     }
 
