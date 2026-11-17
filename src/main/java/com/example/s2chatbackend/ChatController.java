@@ -27,17 +27,14 @@ public class ChatController {
     @MessageMapping("/chat.sendMessage")
     @SendTo("/topic/public")
     public ChatMessage sendMessage(ChatMessage chatMessage) {
-        // Crear la entidad para la base de datos
         ChatMessageEntity entity = new ChatMessageEntity();
         entity.setSender(chatMessage.getSender());
         entity.setContent(chatMessage.getContent());
         entity.setTimestamp(LocalDateTime.now());
         entity.setEdited(false);
         
-        // Guardar el mensaje en MySQL
         ChatMessageEntity savedEntity = chatRepository.save(entity);
 
-        // Devolver el mensaje con el ID asignado por la base de datos
         chatMessage.setId(savedEntity.getId());
         chatMessage.setEdited(false);
 
@@ -47,29 +44,38 @@ public class ChatController {
     @MessageMapping("/chat.editMessage")
     public void editMessage(@Payload ChatMessage editPayload) {
         if (editPayload.getId() != null) {
-            // Buscar el mensaje original en la base de datos por su ID
             Optional<ChatMessageEntity> optionalEntity = chatRepository.findById(editPayload.getId());
 
             if (optionalEntity.isPresent()) {
                 ChatMessageEntity entity = optionalEntity.get();
-                
-                // Actualizar el contenido y la bandera de edición
                 entity.setContent(editPayload.getContent());
                 entity.setEdited(true);
 
-                // Guardar los cambios permanentemente en MySQL
                 chatRepository.save(entity);
 
-                // Preparar la respuesta para el WebSocket
                 editPayload.setEdited(true);
-
-                // Retransmitir la actualización a todos los clientes conectados
                 messagingTemplate.convertAndSend("/topic/public", editPayload);
             }
         }
     }
 
-    // Endpoint opcional para cargar el historial inicial de mensajes
+    @MessageMapping("/chat.deleteMessage")
+    public void deleteMessage(@Payload ChatMessage deletePayload) {
+        if (deletePayload.getId() != null) {
+            // Buscamos el mensaje en MySQL por su ID de forma segura
+            Optional<ChatMessageEntity> optionalEntity = chatRepository.findById(deletePayload.getId());
+
+            if (optionalEntity.isPresent()) {
+                // Eliminamos la entidad encontrada de la base de datos
+                chatRepository.delete(optionalEntity.get());
+
+                // Notificamos a todos los clientes conectados por WebSocket
+                deletePayload.setType("DELETE");
+                messagingTemplate.convertAndSend("/topic/public", deletePayload);
+            }
+        }
+    }
+
     @GetMapping("/messages")
     @ResponseBody
     public List<ChatMessageEntity> getMessages() {
