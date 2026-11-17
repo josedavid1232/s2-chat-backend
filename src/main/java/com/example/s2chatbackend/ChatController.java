@@ -62,14 +62,11 @@ public class ChatController {
     @MessageMapping("/chat.deleteMessage")
     public void deleteMessage(@Payload ChatMessage deletePayload) {
         if (deletePayload.getId() != null) {
-            // Buscamos el mensaje en MySQL por su ID de forma segura
             Optional<ChatMessageEntity> optionalEntity = chatRepository.findById(deletePayload.getId());
 
             if (optionalEntity.isPresent()) {
-                // Eliminamos la entidad encontrada de la base de datos
                 chatRepository.delete(optionalEntity.get());
 
-                // Notificamos a todos los clientes conectados por WebSocket
                 deletePayload.setType("DELETE");
                 messagingTemplate.convertAndSend("/topic/public", deletePayload);
             }
