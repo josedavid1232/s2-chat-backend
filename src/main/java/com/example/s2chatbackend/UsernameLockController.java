@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -18,11 +19,13 @@ public class UsernameLockController {
     private LockedUsernameRepository repository;
 
     @GetMapping("/locked")
-    public List<String> getLockedUsernames() {
-        return repository.findAll()
-                .stream()
-                .map(LockedUsernameEntity::getNormalizedUsername)
-                .toList();
+    public Map<String, String> getLockedUsernames() {
+        List<LockedUsernameEntity> all = repository.findAll();
+        Map<String, String> lockedColors = new HashMap<>();
+        for (LockedUsernameEntity entity : all) {
+            lockedColors.put(entity.getNormalizedUsername(), entity.getColor());
+        }
+        return lockedColors;
     }
 
     @PostMapping("/lock")
@@ -34,8 +37,23 @@ public class UsernameLockController {
 
         String cleanDisplay = rawName.trim();
         String normalized = cleanDisplay.toLowerCase();
+        String requestedColor = body.get("color");
+        String finalColor = (requestedColor != null && requestedColor.matches("^#[0-9a-fA-F]{6}$"))
+                ? requestedColor
+                : "#58a6ff";
 
-        if (repository.existsByNormalizedUsername(normalized)) {
+        Optional<LockedUsernameEntity> existing = repository.findByNormalizedUsername(normalized);
+        if (existing.isPresent()) {
+            LockedUsernameEntity current = existing.get();
+            if ("true".equalsIgnoreCase(body.get("updateColor"))) {
+                current.setColor(finalColor);
+                repository.save(current);
+                return ResponseEntity.ok(Map.of(
+                        "username", current.getDisplayUsername(),
+                        "color", current.getColor(),
+                        "locked", true
+                ));
+            }
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(Map.of("error", "Ese nombre ya está bloqueado por otro usuario"));
         }
@@ -43,9 +61,14 @@ public class UsernameLockController {
         LockedUsernameEntity entity = new LockedUsernameEntity();
         entity.setDisplayUsername(cleanDisplay);
         entity.setNormalizedUsername(normalized);
+        entity.setColor(finalColor);
         repository.save(entity);
 
-        return ResponseEntity.ok(Map.of("username", cleanDisplay, "locked", true));
+        return ResponseEntity.ok(Map.of(
+                "username", cleanDisplay,
+                "color", finalColor,
+                "locked", true
+        ));
     }
 
     @PostMapping("/release")
