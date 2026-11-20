@@ -33,7 +33,7 @@ public class ChatController {
         entity.setContent(chatMessage.getContent());
         entity.setTimestamp(LocalDateTime.now());
         entity.setEdited(false);
-        
+
         // Guardar el mensaje en MySQL
         ChatMessageEntity savedEntity = chatRepository.save(entity);
 
@@ -52,7 +52,7 @@ public class ChatController {
 
             if (optionalEntity.isPresent()) {
                 ChatMessageEntity entity = optionalEntity.get();
-                
+
                 // Actualizar el contenido y la bandera de edición
                 entity.setContent(editPayload.getContent());
                 entity.setEdited(true);
@@ -65,6 +65,18 @@ public class ChatController {
 
                 // Retransmitir la actualización a todos los clientes conectados
                 messagingTemplate.convertAndSend("/topic/public", editPayload);
+            }
+        }
+    }
+
+    @MessageMapping("/chat.deleteMessage")
+    public void deleteMessage(@Payload ChatMessage deletePayload) {
+        if (deletePayload != null && deletePayload.getId() != null) {
+            Long id = deletePayload.getId();
+            if (chatRepository.existsById(id)) {
+                chatRepository.deleteById(id);
+                deletePayload.setType(ChatMessage.MessageType.DELETE);
+                messagingTemplate.convertAndSend("/topic/public", deletePayload);
             }
         }
     }
