@@ -16,6 +16,9 @@ public class LockedUsernameEntity {
     @Column(nullable = false)
     private String displayUsername;
 
+    @Column(nullable = false)
+    private String color = "#58a6ff";
+
     public Long getId() {
         return id;
     }
@@ -38,5 +41,13 @@ public class LockedUsernameEntity {
 
     public void setDisplayUsername(String displayUsername) {
         this.displayUsername = displayUsername;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
     }
 }
