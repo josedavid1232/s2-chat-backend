@@ -8,7 +8,7 @@ public class ChatMessage {
     private boolean edited;
 
     public enum MessageType {
-        CHAT, JOIN, LEAVE, EDIT
+        CHAT, JOIN, LEAVE, EDIT, DELETE
     }
 
     public ChatMessage() {}
